@@ -16,3 +16,8 @@ variable "name" {
   type        = string
   description = "(optional) describe your variable"
 }
+
+variable "include_bastion_host" {
+  type    = bool
+  default = true
+}

@@ -9,6 +9,15 @@ resource "azurerm_app_service_plan" "asp" {
   }
 }
 
+resource "azurerm_application_insights" "appins" {
+  # count               = var.include_app_insights ? 1 : 0
+  name                = var.appins_name
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  tags                = var.tags
+  application_type    = "web"
+}
+
 resource "azurerm_app_service" "webApp" {
   name                = var.name
   location            = var.location
@@ -20,9 +29,10 @@ resource "azurerm_app_service" "webApp" {
     type = var.use_managed_identity ? "SystemAssigned" : "None"
   }
 
-  app_settings = {
-    "SOME_KEY" = "some-value"
-  }
+  app_settings = merge({
+    "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.appins.instrumentation_key
+    "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.appins.connection_string
+  }, var.app_settings)
 
   connection_string {
     name  = "Database"

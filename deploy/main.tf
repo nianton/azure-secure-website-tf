@@ -39,7 +39,7 @@ module "web_app" {
   resource_group_name = azurerm_resource_group.rg.name
   tags                = local.defaultTags
   app_settings = {
-
+    "MY_NEW_SETTING" = "lol"
   }
 
   name        = module.naming.app_service.name
@@ -48,11 +48,11 @@ module "web_app" {
 }
 
 module "sql" {
-  source               = "./sql"
-  name                 = module.naming.mssql_server.name
-  location             = var.location
-  resource_group_name  = azurerm_resource_group.rg.name
-  tags                 = local.defaultTags
+  source              = "./sql"
+  name                = module.naming.mssql_server.name
+  location            = var.location
+  resource_group_name = azurerm_resource_group.rg.name
+  tags                = local.defaultTags
 }
 
 module "vnet" {
