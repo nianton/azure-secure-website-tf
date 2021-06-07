@@ -38,20 +38,22 @@ module "web_app" {
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
   tags                = local.defaultTags
+  name                = module.naming.app_service.name
+  asp_name            = module.naming.app_service_plan.name
+  appins_name         = module.naming.application_insights.name
   app_settings = {
-    "MY_NEW_SETTING" = "lol"
+    "TEST_ADDITIONAL_SETTING" = "TEST_VALUE"
   }
-
-  name        = module.naming.app_service.name
-  asp_name    = module.naming.app_service_plan.name
-  appins_name = module.naming.application_insights.name
 }
 
 module "sql" {
   source              = "./sql"
   name                = module.naming.mssql_server.name
+  db_name             = module.naming.mssql_database.name
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
+  db_admin            = "dbadmin"
+  db_password         = "Qwertyuiop[]|"
   tags                = local.defaultTags
 }
 
@@ -66,8 +68,3 @@ module "vnet" {
 output "names" {
   value = module.naming.resource_group
 }
-
-# output "all_names" {
-#   value = module.naming
-# }
-
