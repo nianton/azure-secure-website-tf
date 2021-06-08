@@ -1,5 +1,3 @@
-
-
 locals {
   backend_address_pool_name      = "${var.name}-beap"
   frontend_port_name             = "${var.name}-feport"
@@ -11,20 +9,23 @@ locals {
 }
 
 resource "azurerm_public_ip" "appgwpip" {
-  name                = "example-pip"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-  allocation_method   = "Dynamic"
+  name                = "pip-${var.name}"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+  tags                = var.tags
 }
 
 resource "azurerm_application_gateway" "network" {
   name                = var.name
   resource_group_name = var.resource_group_name
   location            = var.location
+  tags                = var.tags
 
   sku {
-    name     = "WAF_v2"
-    tier     = "WAF_v2"
+    name = "WAF_v2"
+    tier = "WAF_v2"
   }
 
   autoscale_configuration {
@@ -33,8 +34,8 @@ resource "azurerm_application_gateway" "network" {
   }
 
   gateway_ip_configuration {
-    name      = "my-gateway-ip-configuration"
-    subnet_id = azurerm_subnet.frontend.id
+    name      = "agw-ip-configuration"
+    subnet_id = var.subnet_id
   }
 
   frontend_port {
