@@ -18,7 +18,7 @@ resource "azurerm_application_insights" "appins" {
   application_type    = "web"
 }
 
-resource "azurerm_app_service" "webApp" {
+resource "azurerm_app_service" "webapp" {
   name                = var.name
   location            = var.location
   resource_group_name = var.resource_group_name
@@ -30,7 +30,9 @@ resource "azurerm_app_service" "webApp" {
   }
 
   app_settings = merge({
-    "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.appins.instrumentation_key
+    "WEBSITE_DNS_SERVER"                    = "168.63.129.16",
+    "WEBSITE_VNET_ROUTE_ALL"                = "1"
+    "APPINSIGHTS_INSTRUMENTATIONKEY"        = azurerm_application_insights.appins.instrumentation_key
     "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.appins.connection_string
   }, var.app_settings)
 
@@ -38,5 +40,41 @@ resource "azurerm_app_service" "webApp" {
     name  = "Database"
     type  = "SQLServer"
     value = "Server=some-server.mydomain.com;Integrated Security=SSPI"
+  }
+}
+
+resource "azurerm_app_service_virtual_network_swift_connection" "vnetintegrationconnection" {
+  app_service_id = azurerm_app_service.webapp.id
+  subnet_id      = var.integration_subnet_id
+}
+
+resource "azurerm_private_dns_zone" "dnsprivatezone" {
+  name                = "privatelink.azurewebsites.net"
+  resource_group_name = var.resource_group_name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "dnszonelink" {
+  name                  = "dnszonelink"
+  resource_group_name   = var.resource_group_name
+  private_dns_zone_name = azurerm_private_dns_zone.dnsprivatezone.name
+  virtual_network_id    = var.vnet_id
+}
+
+resource "azurerm_private_endpoint" "privateendpoint" {
+  name                = "pe-${var.name}"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  subnet_id           = var.app_subnet_id
+
+  private_dns_zone_group {
+    name                 = "privatednszonegroup"
+    private_dns_zone_ids = [azurerm_private_dns_zone.dnsprivatezone.id]
+  }
+
+  private_service_connection {
+    name                           = "privateendpointconnection"
+    private_connection_resource_id = azurerm_app_service.webapp.id
+    subresource_names              = ["sites"]
+    is_manual_connection           = false
   }
 }

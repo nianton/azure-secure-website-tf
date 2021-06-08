@@ -19,14 +19,15 @@ resource "azurerm_mssql_server" "mssql_srv" {
   administrator_login_password = var.db_password
   minimum_tls_version          = "1.2"
   tags                         = var.tags
-  extended_auditing_policy {
-    storage_endpoint                        = azurerm_storage_account.stg.primary_blob_endpoint
-    storage_account_access_key              = azurerm_storage_account.stg.primary_access_key
-    storage_account_access_key_is_secondary = true
-    retention_in_days                       = 6
-  }
 }
 
+resource "azurerm_mssql_server_extended_auditing_policy" "mssqlaudit" {
+  server_id                               = azurerm_mssql_server.mssql_srv.id
+  storage_endpoint                        = azurerm_storage_account.stg.primary_blob_endpoint
+  storage_account_access_key              = azurerm_storage_account.stg.primary_access_key
+  storage_account_access_key_is_secondary = true
+  retention_in_days                       = 6
+}
 
 resource "azurerm_mssql_database" "mssql_db" {
   name           = var.db_name
@@ -37,5 +38,5 @@ resource "azurerm_mssql_database" "mssql_db" {
   read_scale     = true
   sku_name       = "BC_Gen5_2"
   zone_redundant = true
-  tags = var.tags
+  tags           = var.tags
 }

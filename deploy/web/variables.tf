@@ -54,3 +54,16 @@ variable "include_app_insights" {
   default     = true
   description = "(optional) describe your variable"
 }
+
+
+variable "vnet_id" {
+  
+}
+
+variable "app_subnet_id" {
+  
+}
+
+variable "integration_subnet_id" {
+  
+}

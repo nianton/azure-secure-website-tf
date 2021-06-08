@@ -31,21 +31,6 @@ resource "azurerm_resource_group" "rg" {
   location = var.location
   tags     = local.defaultTags
 }
-
-module "web_app" {
-  source = "./web"
-
-  location            = var.location
-  resource_group_name = azurerm_resource_group.rg.name
-  tags                = local.defaultTags
-  name                = module.naming.app_service.name
-  asp_name            = module.naming.app_service_plan.name
-  appins_name         = module.naming.application_insights.name
-  app_settings = {
-    "TEST_ADDITIONAL_SETTING" = "TEST_VALUE"
-  }
-}
-
 module "sql" {
   source              = "./sql"
   name                = module.naming.mssql_server.name
@@ -63,6 +48,32 @@ module "vnet" {
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
   tags                = local.defaultTags
+}
+
+module "bastion" {
+  source              = "./bastion"
+  name                = module.naming.bastion_host.name
+  location            = var.location
+  resource_group_name = azurerm_resource_group.rg.name
+  tags                = local.defaultTags
+  subnet_id           = module.vnet.bastion_subnet_id
+}
+
+module "web_app" {
+  source = "./web"
+
+  location              = var.location
+  resource_group_name   = azurerm_resource_group.rg.name
+  tags                  = local.defaultTags
+  name                  = module.naming.app_service.name
+  asp_name              = module.naming.app_service_plan.name
+  appins_name           = module.naming.application_insights.name
+  vnet_id               = module.vnet.id
+  integration_subnet_id = module.vnet.integration_subnet_id
+  app_subnet_id         = module.vnet.app_subnet_id
+  app_settings = {
+    "TEST_ADDITIONAL_SETTING" = "TEST_VALUE"
+  }
 }
 
 output "names" {
