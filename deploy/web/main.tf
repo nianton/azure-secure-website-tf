@@ -48,16 +48,12 @@ resource "azurerm_app_service_virtual_network_swift_connection" "vnetintegration
   subnet_id      = var.integration_subnet_id
 }
 
-resource "azurerm_private_dns_zone" "dnsprivatezone" {
+module "privatednszone" {
+  source              = "../dnszone"
   name                = "privatelink.azurewebsites.net"
   resource_group_name = var.resource_group_name
-}
-
-resource "azurerm_private_dns_zone_virtual_network_link" "dnszonelink" {
-  name                  = "dnszonelink"
-  resource_group_name   = var.resource_group_name
-  private_dns_zone_name = azurerm_private_dns_zone.dnsprivatezone.name
-  virtual_network_id    = var.vnet_id
+  vnet_id             = var.vnet_id
+  tags                = var.tags
 }
 
 resource "azurerm_private_endpoint" "privateendpoint" {
@@ -68,7 +64,7 @@ resource "azurerm_private_endpoint" "privateendpoint" {
 
   private_dns_zone_group {
     name                 = "privatednszonegroup"
-    private_dns_zone_ids = [azurerm_private_dns_zone.dnsprivatezone.id]
+    private_dns_zone_ids = [module.privatednszone.id]
   }
 
   private_service_connection {

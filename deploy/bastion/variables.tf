@@ -1,6 +1,6 @@
 variable "name" {
   type        = string
-  description = "Azure SQL Server resource name."
+  description = "Bastion host resource name."
 }
 
 variable "resource_group_name" {
