@@ -40,3 +40,30 @@ resource "azurerm_mssql_database" "mssql_db" {
   zone_redundant = true
   tags           = var.tags
 }
+
+module "privatednszone" {
+  source              = "../dnszone"
+  name                = "privatelink.database.windows.net"
+  resource_group_name = var.resource_group_name
+  vnet_id             = var.vnet_id
+  tags                = var.tags
+}
+
+resource "azurerm_private_endpoint" "privateendpoint" {
+  name                = "pe-${var.name}"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  subnet_id           = var.app_subnet_id
+
+  private_dns_zone_group {
+    name                 = "privatednszonegroup"
+    private_dns_zone_ids = [module.privatednszone.id]
+  }
+
+  private_service_connection {
+    name                           = "privateendpointconnection"
+    private_connection_resource_id = azurerm_mssql_server.mssql_srv.id
+    subresource_names              = ["sqlServer"]
+    is_manual_connection           = false
+  }
+}

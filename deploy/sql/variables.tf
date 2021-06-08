@@ -31,3 +31,13 @@ variable "db_password" {
   type        = string
   description = "Admin password for the Azure SQL Server"
 }
+
+variable "vnet_id" {
+  type        = string
+  description = "Virtual network id to create the private endpoint in & link the respective private DNS zone."
+}
+
+variable "app_subnet_id" {
+  type        = string
+  description = "The subnet id to create the private endpoint in."
+}

@@ -31,16 +31,6 @@ resource "azurerm_resource_group" "rg" {
   location = var.location
   tags     = local.defaultTags
 }
-module "sql" {
-  source              = "./sql"
-  name                = module.naming.mssql_server.name
-  db_name             = module.naming.mssql_database.name
-  location            = var.location
-  resource_group_name = azurerm_resource_group.rg.name
-  db_admin            = "dbadmin"
-  db_password         = "Qwertyuiop[]|"
-  tags                = local.defaultTags
-}
 
 module "vnet" {
   source              = "./vnet"
@@ -48,6 +38,19 @@ module "vnet" {
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
   tags                = local.defaultTags
+}
+
+module "sql" {
+  source              = "./sql"
+  name                = module.naming.mssql_server.name
+  location            = var.location
+  resource_group_name = azurerm_resource_group.rg.name
+  db_name             = module.naming.mssql_database.name
+  db_admin            = "dbadmin"
+  db_password         = "Qwertyuiop[]|"
+  tags                = local.defaultTags
+  vnet_id             = module.vnet.id
+  app_subnet_id       = module.vnet.app_subnet_id
 }
 
 module "bastion" {
