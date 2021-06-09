@@ -2,8 +2,12 @@ output "id" {
     value = azurerm_app_service.webapp.id
 }
 
-output "identity" {
+output "managed_identity_tenant_id" {
   value = azurerm_app_service.webapp.identity[0].tenant_id
+}
+
+output "managed_identity_object_id" {
+  value = azurerm_app_service.webapp.identity[0].principal_id
 }
 
 output "plan_id" {

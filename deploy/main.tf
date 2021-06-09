@@ -90,6 +90,17 @@ module "waf" {
   subnet_id           = module.vnet.default_subnet_id
 }
 
+module "keyvault" {
+  source = "./keyvault"
+
+  name                = module.naming.key_vault.name
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.location
+  tags                = local.defaultTags
+  managed_identity_tenant_id = module.web_app.managed_identity_tenant_id
+  managed_identity_object_id = module.web_app.managed_identity_object_id
+}
+
 output "names" {
   value = module.naming.resource_group
 }
