@@ -13,3 +13,8 @@ output "integration_subnet_id" {
 output "bastion_subnet_id" {
   value = azurerm_subnet.bastionsubnet.id
 }
+
+output "admin_subnet_id" {
+  value = azurerm_subnet.adminsubnet.id
+}
+

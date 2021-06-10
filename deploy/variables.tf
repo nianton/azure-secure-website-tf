@@ -8,7 +8,7 @@ variable "naming_convention_type" {
   }
 }
 
-variable "appName" {
+variable "app_name" {
   type        = string
   default     = "secweb"
   description = "The name of the application / service to be deployed in this environment."

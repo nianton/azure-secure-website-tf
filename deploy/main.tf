@@ -13,10 +13,10 @@ provider "azurerm" {
 }
 
 locals {
-  resource_base_name = "${var.appName}-${var.environment}"
+  resource_base_name = "${var.app_name}-${var.environment}"
   defaultTags = {
-    appName     = var.appName
-    environmnet = var.environment
+    appName     = var.app_name
+    environment = var.environment
   }
 }
 
@@ -76,7 +76,7 @@ module "web_app" {
   app_subnet_id         = module.vnet.app_subnet_id
   app_settings = {
     "TEST_ADDITIONAL_SETTING" = "TEST_VALUE"
-    "DB_CONNECTION_STRING" = module.sql.connection_string
+    "DB_CONNECTION_STRING"    = module.sql.connection_string
   }
 }
 
@@ -90,15 +90,39 @@ module "waf" {
   subnet_id           = module.vnet.default_subnet_id
 }
 
-module "keyvault" {
-  source = "./keyvault"
+module "servicebus" {
+  source = "./servicebus"
 
-  name                = module.naming.key_vault.name
+  name                = module.naming.servicebus_namespace.name
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.location
+  sku                 = "Premium"
+  tags                = local.defaultTags
+  vnet_id             = module.vnet.id
+  subnet_id           = module.vnet.app_subnet_id
+}
+
+module "jumphost" {
+  source = "./jumphost"
+
+  name                = module.naming.virtual_machine.name
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.location
   tags                = local.defaultTags
+  subnet_id           = module.vnet.admin_subnet_id
+}
+
+module "keyvault" {
+  source = "./keyvault"
+
+  name                       = module.naming.key_vault.name
+  resource_group_name        = azurerm_resource_group.rg.name
+  location                   = var.location
+  tags                       = local.defaultTags
   managed_identity_tenant_id = module.web_app.managed_identity_tenant_id
   managed_identity_object_id = module.web_app.managed_identity_object_id
+  service_bus_connection     = module.servicebus.connection_string
+  sql_connection             = module.sql.connection_string
 }
 
 output "names" {

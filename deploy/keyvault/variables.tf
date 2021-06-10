@@ -26,3 +26,14 @@ variable "managed_identity_object_id" {
   type        = string
   description = "The website's managed identity Object Id to allow access to secrets"
 }
+
+
+variable "service_bus_connection" {
+  type        = string
+  description = "The service bus connection to store as secret"
+}
+
+variable "sql_connection" {
+  type        = string
+  description = "The sql server connection to store as secret"
+}
