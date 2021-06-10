@@ -4,12 +4,26 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "=2.62.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~>2.2"
+    }
   }
 }
 
 provider "azurerm" {
   features {
   }
+}
+
+provider "random" {
+
+}
+
+resource "random_password" "vmpwd" {
+  length           = 16
+  special          = true
+  override_special = "_%@!"
 }
 
 locals {
@@ -102,6 +116,17 @@ module "servicebus" {
   subnet_id           = module.vnet.app_subnet_id
 }
 
+module "storageaccount" {
+   source = "./storage"
+
+  name                = replace(module.naming.storage_account.name, "-", "")
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.location
+  tags                = local.defaultTags
+  vnet_id             = module.vnet.id
+  subnet_id           = module.vnet.app_subnet_id
+}
+
 module "jumphost" {
   source = "./jumphost"
 
@@ -109,6 +134,7 @@ module "jumphost" {
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.location
   tags                = local.defaultTags
+  admin_password      = random_password.vmpwd.result
   subnet_id           = module.vnet.admin_subnet_id
 }
 
@@ -123,8 +149,4 @@ module "keyvault" {
   managed_identity_object_id = module.web_app.managed_identity_object_id
   service_bus_connection     = module.servicebus.connection_string
   sql_connection             = module.sql.connection_string
-}
-
-output "names" {
-  value = module.naming.resource_group
 }
