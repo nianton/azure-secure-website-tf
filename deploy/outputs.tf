@@ -11,3 +11,7 @@ output "jumphost_admin_password" {
   value = random_password.vmpwd.result
   sensitive = true
 }
+
+output "website_fqdn" {
+  value = module.waf.fqdn
+}

@@ -14,6 +14,7 @@ resource "azurerm_public_ip" "appgwpip" {
   resource_group_name = var.resource_group_name
   allocation_method   = "Static"
   sku                 = "Standard"
+  domain_name_label   = var.domain_name_label
   tags                = var.tags
 }
 
@@ -50,15 +51,16 @@ resource "azurerm_application_gateway" "network" {
 
   backend_address_pool {
     name = local.backend_address_pool_name
+    fqdns = [ var.webapp_fqdn ]
   }
 
   backend_http_settings {
     name                  = local.http_setting_name
     cookie_based_affinity = "Disabled"
-    path                  = "/path1/"
-    port                  = 80
-    protocol              = "Http"
+    port                  = 443
+    protocol              = "Https"
     request_timeout       = 60
+    pick_host_name_from_backend_address = true
   }
 
   http_listener {

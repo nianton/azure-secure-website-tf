@@ -21,3 +21,7 @@ output "appins_id" {
 output "appins_instrumentation_key" {
   value = azurerm_application_insights.appins.instrumentation_key
 }
+
+output "site_hostname" {
+  value = azurerm_app_service.webapp.default_site_hostname
+}

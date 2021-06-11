@@ -102,6 +102,8 @@ module "waf" {
   location            = var.location
   tags                = local.defaultTags
   subnet_id           = module.vnet.default_subnet_id
+  domain_name_label   = local.resource_base_name
+  webapp_fqdn         = module.web_app.site_hostname
 }
 
 module "servicebus" {
@@ -117,7 +119,7 @@ module "servicebus" {
 }
 
 module "storageaccount" {
-   source = "./storage"
+  source = "./storage"
 
   name                = replace(module.naming.storage_account.name, "-", "")
   resource_group_name = azurerm_resource_group.rg.name
