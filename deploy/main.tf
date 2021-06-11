@@ -26,6 +26,12 @@ resource "random_password" "vmpwd" {
   override_special = "_%@!"
 }
 
+resource "random_password" "sqlpwd" {
+  length           = 16
+  special          = true
+  override_special = "_%@!"
+}
+
 locals {
   resource_base_name = "${var.app_name}-${var.environment}"
   defaultTags = {
@@ -48,20 +54,23 @@ resource "azurerm_resource_group" "rg" {
 
 module "vnet" {
   source              = "./vnet"
+  
   name                = module.naming.virtual_network.name
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
   tags                = local.defaultTags
+  address_spaces      = var.vnet_address_spaces
 }
 
 module "sql" {
   source              = "./sql"
+
   name                = module.naming.mssql_server.name
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
   db_name             = module.naming.mssql_database.name
-  db_admin            = "dbadmin"
-  db_password         = "Qwertyuiop[]|"
+  db_admin            = var.sql_admin_username
+  db_password         = random_password.sqlpwd.result
   tags                = local.defaultTags
   vnet_id             = module.vnet.id
   app_subnet_id       = module.vnet.app_subnet_id
@@ -69,6 +78,7 @@ module "sql" {
 
 module "bastion" {
   source              = "./bastion"
+
   name                = module.naming.bastion_host.name
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
@@ -136,6 +146,7 @@ module "jumphost" {
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.location
   tags                = local.defaultTags
+  admin_username =  var.jumphost_admin_username
   admin_password      = random_password.vmpwd.result
   subnet_id           = module.vnet.admin_subnet_id
 }
